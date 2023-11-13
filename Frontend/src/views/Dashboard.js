@@ -20,6 +20,7 @@ import React from "react";
 import classNames from "classnames";
 // react plugin used to create charts
 import { Line, Bar } from "react-chartjs-2";
+import Tables from "./TableList";
 
 // reactstrap components
 import {
@@ -127,6 +128,10 @@ function Dashboard(props) {
                   </Col>
                 </Row>
               </CardHeader>
+              <CardBody>
+                <Tables />
+              </CardBody>
+
               <CardBody>
                 <div className="chart-area">
                   <Line
