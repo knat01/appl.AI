@@ -1,0 +1,31 @@
+{
+    "jobs": [
+      {
+        "job_id": "12345",
+        "job_name": "Software Engineer",
+        "company": "TechCorp",
+        "location": "San Francisco, CA",
+        "job_link": "https://www.techcorp.com/careers/12345",
+        "salary_range": "$80,000 - $120,000",
+        "required_experience": "3-5 years",
+        "brief_description": "As a Software Engineer at TechCorp, you will be part of an innovative team responsible for designing, developing, and implementing software solutions. This role involves working closely with cross-functional teams to create high-quality software that meets client needs, ensuring scalability and reliability. You will engage in problem-solving, code optimization, and contribute to all phases of the software development lifecycle.",
+        "skills_required": ["Java", "SQL", "Team Collaboration"],
+        "qualifications_needed": "Bachelor's in Computer Science",
+        "experience_level": "Mid-Level"
+      },
+      {
+        "job_id": "67890",
+        "job_name": "Digital Marketing Specialist",
+        "company": "CreativeSolutions",
+        "location": "New York, NY",
+        "job_link": "https://www.creativesolutions.com/careers/67890",
+        "salary_range": "$60,000 - $85,000",
+        "required_experience": "2+ years",
+        "brief_description": "In the Digital Marketing Specialist role at CreativeSolutions, you'll drive digital marketing strategies and campaigns across various platforms. This position entails managing social media accounts, creating engaging content, analyzing market trends, and collaborating with the marketing team to enhance brand presence. You'll also monitor campaign performance, optimize SEO, and use analytics to inform decisions and increase engagement.",
+        "skills_required": ["SEO/SEM", "Content Creation", "Analytics"],
+        "qualifications_needed": "Bachelor's in Marketing or related field",
+        "experience_level": "Entry-Level to Mid-Level"
+      }
+    ]
+  }
+  
