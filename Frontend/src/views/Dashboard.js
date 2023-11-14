@@ -128,6 +128,9 @@ function Dashboard(props) {
                   </Col>
                 </Row>
               </CardHeader>
+              <CardBody>
+                <Tables />
+              </CardBody>
 
               <CardBody>
                 <div className="chart-area">
