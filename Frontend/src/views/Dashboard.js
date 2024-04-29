@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import { Button, Card, CardHeader, CardBody, CardTitle, Container, Row, Col, FormGroup, Label, Input, Table, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 
+// Get the backend URL from the environment variable
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
+
 function EmailPreviewModal({ recipientEmail, emailBody, isOpen, toggle }) {
   return (
     <Modal isOpen={isOpen} toggle={toggle}>
@@ -55,7 +58,7 @@ function Dashboard() {
     formData.append("description", description);
 
     try {
-      const result = await axios.post('http://localhost:8080/images', formData, {
+      const result = await axios.post(`${backendUrl}/images`, formData, {  // Use backendUrl here
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setJobData(result.data.emailResults);
@@ -98,7 +101,7 @@ function Dashboard() {
     setLoadingStates((prevStates) => ({ ...prevStates, [jobItem.job_link]: { resume: true } })); 
 
     try {
-      const response = await axios.post('http://localhost:8080/generate-resume', { jobItem });
+      const response = await axios.post(`${backendUrl}/generate-resume`, { jobItem });  // Use backendUrl
       console.log('Response from backend:', response.data);
   
       if (response.data && response.data.resume) {
@@ -132,7 +135,7 @@ function Dashboard() {
     setLoadingStates((prevStates) => ({ ...prevStates, [jobItem.job_link]: { coverLetter: true } })); 
 
     try {
-      const response = await axios.post('http://localhost:8080/generate-cover-letter', { jobItem });
+      const response = await axios.post(`${backendUrl}/generate-cover-letter`, { jobItem }); // Use backendUrl
       console.log('Response from backend:', response.data);
 
       if (response.data && response.data.cover_letter) {
@@ -179,7 +182,7 @@ function Dashboard() {
     setLoadingStates((prevStates) => ({ ...prevStates, [jobItem.job_link]: { apply: true } })); 
 
     try {
-      const response = await axios.post('http://localhost:8080/generate-email', { jobItem });
+      const response = await axios.post(`${backendUrl}/generate-email`, { jobItem });  // Use backendUrl
       const { emailBody, recipientEmail } = response.data;
       setEmailPreviewModalData({ recipientEmail, emailBody, isOpen: true });
     } catch (error) {
@@ -192,7 +195,7 @@ function Dashboard() {
 
   const handleApiKeySubmit = (e) => {
     e.preventDefault();
-    axios.post('http://localhost:8080/set-api-key', { apiKey })
+    axios.post(`${backendUrl}/set-api-key`, { apiKey }) // Use backendUrl
       .then(response => {
         console.log("API key sent to backend:", response.data);
         setModal(false);
@@ -212,7 +215,7 @@ function Dashboard() {
     setLoadMoreJobsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:8080/find-more-jobs', { startIndex });
+      const response = await axios.post(`${backendUrl}/find-more-jobs`, { startIndex }); // Use backendUrl
       const moreJobs = response.data.emailResults;
 
       if (moreJobs.length > 0) {
