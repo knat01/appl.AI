@@ -37,13 +37,16 @@ function Dashboard() {
   const [isLoadingCoverLetter, setIsLoadingCoverLetter] = useState(false); 
   const [isLoadingApply, setIsLoadingApply] = useState(false); 
   const [startIndex, setStartIndex] = useState(5); 
-  const [loadMoreJobsLoading, setLoadMoreJobsLoading] = useState(false); // Loading state for "Load More Jobs"
+  const [loadMoreJobsLoading, setLoadMoreJobsLoading] = useState(false); 
 
   const [emailPreviewModalData, setEmailPreviewModalData] = useState({
     recipientEmail: "",
     emailBody: "",
     isOpen: false
   });
+
+  // State to track loading status for each job item
+  const [loadingStates, setLoadingStates] = useState({}); 
 
 
   const postImage = async ({ image, description }) => {
@@ -92,8 +95,8 @@ function Dashboard() {
   };
 
   const handleGenerateResume = async (jobItem) => {
-    setIsLoadingResume(true);
-  
+    setLoadingStates((prevStates) => ({ ...prevStates, [jobItem.job_link]: { resume: true } })); 
+
     try {
       const response = await axios.post('http://localhost:8080/generate-resume', { jobItem });
       console.log('Response from backend:', response.data);
@@ -121,12 +124,12 @@ function Dashboard() {
       console.error('Error generating resume:', error);
       alert("An error occurred while generating the resume. Please try again later.");
     } finally {
-      setIsLoadingResume(false);
+      setLoadingStates((prevStates) => ({ ...prevStates, [jobItem.job_link]: { resume: false } })); 
     }
   };
 
   const handleGenerateCoverLetter = async (jobItem) => {
-    setIsLoadingCoverLetter(true);
+    setLoadingStates((prevStates) => ({ ...prevStates, [jobItem.job_link]: { coverLetter: true } })); 
 
     try {
       const response = await axios.post('http://localhost:8080/generate-cover-letter', { jobItem });
@@ -156,24 +159,24 @@ function Dashboard() {
       console.error('Error generating cover letter:', error);
       alert("An error occurred while generating the cover letter. Please try again later.");
     } finally {
-      setIsLoadingCoverLetter(false);
+      setLoadingStates((prevStates) => ({ ...prevStates, [jobItem.job_link]: { coverLetter: false } })); 
     }
 };
 
   const handleApplyToJob = (jobItem) => {
-    setIsLoadingApply(true); 
+    setLoadingStates((prevStates) => ({ ...prevStates, [jobItem.job_link]: { apply: true } })); 
 
     try {
       // Logic to apply to job based on jobItem
       console.log("Applying to job:", jobItem);
     } finally {
-      setIsLoadingApply(false); 
+      setLoadingStates((prevStates) => ({ ...prevStates, [jobItem.job_link]: { apply: false } })); 
     }
   };
 
 
   const handleGenerateEmail = async (jobItem) => {
-    setIsLoadingApply(true);
+    setLoadingStates((prevStates) => ({ ...prevStates, [jobItem.job_link]: { apply: true } })); 
 
     try {
       const response = await axios.post('http://localhost:8080/generate-email', { jobItem });
@@ -183,7 +186,7 @@ function Dashboard() {
       console.error('Error generating email:', error);
       alert("An error occurred while generating the email. Please try again later.");
     } finally {
-      setIsLoadingApply(false);
+      setLoadingStates((prevStates) => ({ ...prevStates, [jobItem.job_link]: { apply: false } })); 
     }
   };
 
@@ -301,17 +304,17 @@ function Dashboard() {
                           <a href={item.job_link} target="_blank" rel="noopener noreferrer">Link</a>
                         </td>
                         <td> 
-  <Button color="primary" size="sm" onClick={() => handleGenerateResume(item)} style={{ marginRight: '5px' }} disabled={isLoadingResume}> 
-    {isLoadingResume && <div className="button-overlay">Loading...</div>}
-    {!isLoadingResume && "Generate Resume"}
+  <Button color="primary" size="sm" onClick={() => handleGenerateResume(item)} style={{ marginRight: '5px' }} disabled={loadingStates[item.job_link]?.resume}> 
+    {loadingStates[item.job_link]?.resume && <div className="button-overlay">Loading...</div>}
+    {!loadingStates[item.job_link]?.resume && "Generate Resume"}
   </Button>
-  <Button color="primary" size="sm" onClick={() => handleGenerateCoverLetter(item)} style={{ marginRight: '5px' }} disabled={isLoadingCoverLetter}> 
-    {isLoadingCoverLetter && <div className="button-overlay">Loading...</div>}
-    {!isLoadingCoverLetter && "Generate Cover Letter"}
+  <Button color="primary" size="sm" onClick={() => handleGenerateCoverLetter(item)} style={{ marginRight: '5px' }} disabled={loadingStates[item.job_link]?.coverLetter}> 
+    {loadingStates[item.job_link]?.coverLetter && <div className="button-overlay">Loading...</div>}
+    {!loadingStates[item.job_link]?.coverLetter && "Generate Cover Letter"}
   </Button>
-  <Button color="primary" size="sm" onClick={() => handleGenerateEmail(item)} disabled={isLoadingApply}> 
-    {isLoadingApply && <div className="button-overlay">Loading...</div>}
-    {!isLoadingApply && "Apply to Job"}
+  <Button color="primary" size="sm" onClick={() => handleGenerateEmail(item)} disabled={loadingStates[item.job_link]?.apply}> 
+    {loadingStates[item.job_link]?.apply && <div className="button-overlay">Loading...</div>}
+    {!loadingStates[item.job_link]?.apply && "Apply to Job"}
   </Button>
 </td>
 </tr>
