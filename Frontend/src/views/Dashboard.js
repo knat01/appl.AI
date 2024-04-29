@@ -1,540 +1,337 @@
-/*!
+import React, { useState, useEffect } from "react";
+import axios from 'axios';
+import { Button, Card, CardHeader, CardBody, CardTitle, Container, Row, Col, FormGroup, Label, Input, Table, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 
-=========================================================
-* Black Dashboard React v1.2.2
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/black-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/black-dashboard-react/blob/master/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-import React from "react";
-// nodejs library that concatenates classes
-import classNames from "classnames";
-// react plugin used to create charts
-import { Line, Bar } from "react-chartjs-2";
-import Tables from "./TableList";
-
-// reactstrap components
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardHeader,
-  CardBody,
-  CardTitle,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  UncontrolledDropdown,
-  Label,
-  FormGroup,
-  Input,
-  Table,
-  Row,
-  Col,
-  UncontrolledTooltip,
-} from "reactstrap";
-
-// core components
-import {
-  chartExample1,
-  chartExample2,
-  chartExample3,
-  chartExample4,
-} from "variables/charts.js";
-
-function Dashboard(props) {
-  const [bigChartData, setbigChartData] = React.useState("data1");
-  const setBgChartData = (name) => {
-    setbigChartData(name);
-  };
+function EmailPreviewModal({ recipientEmail, emailBody, isOpen, toggle }) {
   return (
-    <>
-      <div className="content">
-        <Row>
-          <Col xs="12">
-            <Card className="card-chart">
-              <CardHeader>
-                <Row>
-                  <Col className="text-left" sm="6">
-                    <h5 className="card-category">Total Shipments</h5>
-                    <CardTitle tag="h2">Performance</CardTitle>
-                  </Col>
-                  <Col sm="6">
-                    <ButtonGroup
-                      className="btn-group-toggle float-right"
-                      data-toggle="buttons"
-                    >
-                      <Button
-                        tag="label"
-                        className={classNames("btn-simple", {
-                          active: bigChartData === "data1",
-                        })}
-                        color="info"
-                        id="0"
-                        size="sm"
-                        onClick={() => setBgChartData("data1")}
-                      >
-                        <span className="d-none d-sm-block d-md-block d-lg-block d-xl-block">
-                          Accounts
-                        </span>
-                        <span className="d-block d-sm-none">
-                          <i className="tim-icons icon-single-02" />
-                        </span>
-                      </Button>
-                      <Button
-                        color="info"
-                        id="1"
-                        size="sm"
-                        tag="label"
-                        className={classNames("btn-simple", {
-                          active: bigChartData === "data2",
-                        })}
-                        onClick={() => setBgChartData("data2")}
-                      >
-                        <span className="d-none d-sm-block d-md-block d-lg-block d-xl-block">
-                          Purchases
-                        </span>
-                        <span className="d-block d-sm-none">
-                          <i className="tim-icons icon-gift-2" />
-                        </span>
-                      </Button>
-                      <Button
-                        color="info"
-                        id="2"
-                        size="sm"
-                        tag="label"
-                        className={classNames("btn-simple", {
-                          active: bigChartData === "data3",
-                        })}
-                        onClick={() => setBgChartData("data3")}
-                      >
-                        <span className="d-none d-sm-block d-md-block d-lg-block d-xl-block">
-                          Sessions
-                        </span>
-                        <span className="d-block d-sm-none">
-                          <i className="tim-icons icon-tap-02" />
-                        </span>
-                      </Button>
-                    </ButtonGroup>
-                  </Col>
-                </Row>
-              </CardHeader>
-              <CardBody>
-                <Tables />
-              </CardBody>
+    <Modal isOpen={isOpen} toggle={toggle}>
+      <ModalHeader toggle={toggle}>Job Application Email Preview</ModalHeader>
+      <ModalBody>
+        <p><strong>Email to be sent to:</strong> {recipientEmail}</p>
+        <hr />
+        <p><strong>Email Body:</strong></p>
+        <pre style={{ color: 'black' }}>{emailBody}</pre> 
+      </ModalBody> 
+      <ModalFooter>
+        <Button color="secondary" onClick={toggle}>Close</Button>
+        {/* Optionally, add a "Send Email" button here to open the user's email client */}
+      </ModalFooter>
+    </Modal>
+  );
+}
 
-              <CardBody>
-                <div className="chart-area">
-                  <Line
-                    data={chartExample1[bigChartData]}
-                    options={chartExample1.options}
-                  />
-                </div>
+
+function Dashboard() {
+  const [file, setFile] = useState(null);
+  const [error, setError] = useState("");
+  const [jobData, setJobData] = useState([]);
+  const [apiKey, setApiKey] = useState("");
+  const [modal, setModal] = useState(true);
+  const [showUpload, setShowUpload] = useState(false);
+  const [images, setImages] = useState([]);
+  const [description, setDescription] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [isLoadingAnalyze, setIsLoadingAnalyze] = useState(false); 
+  const [isLoadingResume, setIsLoadingResume] = useState(false); 
+  const [isLoadingCoverLetter, setIsLoadingCoverLetter] = useState(false); 
+  const [isLoadingApply, setIsLoadingApply] = useState(false); 
+  const [startIndex, setStartIndex] = useState(5); 
+  const [loadMoreJobsLoading, setLoadMoreJobsLoading] = useState(false); // Loading state for "Load More Jobs"
+
+  const [emailPreviewModalData, setEmailPreviewModalData] = useState({
+    recipientEmail: "",
+    emailBody: "",
+    isOpen: false
+  });
+
+
+  const postImage = async ({ image, description }) => {
+    const formData = new FormData();
+    formData.append("image", image);
+    formData.append("description", description);
+
+    try {
+      const result = await axios.post('http://localhost:8080/images', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setJobData(result.data.emailResults);
+      console.log("Response from backend:", result.data); 
+      return result.data;
+    } catch (err) {
+      console.error('Error posting image:', err);
+      setError('Error posting image');
+      return null;
+    }
+  };
+
+  const submit = async (event) => {
+    event.preventDefault();
+    setError("");
+    setIsLoadingAnalyze(true); 
+
+    try {
+      const result = await postImage({ image: file, description });
+      if (result && result.imagePath) {
+        setImages([result.imagePath, ...images]);
+      } else {
+        setError('Image upload failed: No imagePath returned');
+      }
+    } catch (err) {
+      console.error('Error posting image:', err);
+      setError('Error posting image');
+    } finally {
+      setIsLoadingAnalyze(false); 
+    }
+  };
+
+
+  const fileSelected = event => {
+    const file = event.target.files[0];
+    setFile(file);
+  };
+
+  const handleGenerateResume = async (jobItem) => {
+    setIsLoadingResume(true);
+  
+    try {
+      const response = await axios.post('http://localhost:8080/generate-resume', { jobItem });
+      console.log('Response from backend:', response.data);
+  
+      if (response.data && response.data.resume) {
+        // Create and submit form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'https://www.overleaf.com/docs';
+        form.target = '_blank';
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'snip_uri';
+        input.value = response.data.resume;  // Ensure this is the correct property
+        form.appendChild(input);
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+      } else {
+        console.error('No resume data URL provided by backend');
+      }
+    } catch (error) {
+      console.error('Error generating resume:', error);
+      alert("An error occurred while generating the resume. Please try again later.");
+    } finally {
+      setIsLoadingResume(false);
+    }
+  };
+
+  const handleGenerateCoverLetter = async (jobItem) => {
+    setIsLoadingCoverLetter(true);
+
+    try {
+      const response = await axios.post('http://localhost:8080/generate-cover-letter', { jobItem });
+      console.log('Response from backend:', response.data);
+
+      if (response.data && response.data.cover_letter) {
+        // Create and submit form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'https://www.overleaf.com/docs?engine=lualatex';  // Specify the engine parameter
+        form.target = '_blank'; // This will open the document in a new tab
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'snip_uri';
+        input.value = response.data.cover_letter; // Use the data URL from the backend response
+        form.appendChild(input);
+
+        document.body.appendChild(form);
+        form.submit(); // Automatically submit the form to Overleaf
+        document.body.removeChild(form); // Clean up by removing the form after submission
+      } else {
+        console.error('No cover letter data URL provided by the backend');
+        alert("No cover letter data was provided. Please try again.");
+      }
+    } catch (error) {
+      console.error('Error generating cover letter:', error);
+      alert("An error occurred while generating the cover letter. Please try again later.");
+    } finally {
+      setIsLoadingCoverLetter(false);
+    }
+};
+
+  const handleApplyToJob = (jobItem) => {
+    setIsLoadingApply(true); 
+
+    try {
+      // Logic to apply to job based on jobItem
+      console.log("Applying to job:", jobItem);
+    } finally {
+      setIsLoadingApply(false); 
+    }
+  };
+
+
+  const handleGenerateEmail = async (jobItem) => {
+    setIsLoadingApply(true);
+
+    try {
+      const response = await axios.post('http://localhost:8080/generate-email', { jobItem });
+      const { emailBody, recipientEmail } = response.data;
+      setEmailPreviewModalData({ recipientEmail, emailBody, isOpen: true });
+    } catch (error) {
+      console.error('Error generating email:', error);
+      alert("An error occurred while generating the email. Please try again later.");
+    } finally {
+      setIsLoadingApply(false);
+    }
+  };
+
+  const handleApiKeySubmit = (e) => {
+    e.preventDefault();
+    axios.post('http://localhost:8080/set-api-key', { apiKey })
+      .then(response => {
+        console.log("API key sent to backend:", response.data);
+        setModal(false);
+        setShowUpload(true);
+      })
+      .catch(error => {
+        console.error("Error sending API key:", error);
+        setError("Failed to set API key");
+      });
+  };
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleFindMoreJobs = async () => {
+    setLoadMoreJobsLoading(true);
+
+    try {
+      const response = await axios.post('http://localhost:8080/find-more-jobs', { startIndex });
+      const moreJobs = response.data.emailResults;
+
+      if (moreJobs.length > 0) {
+        setJobData([...jobData, ...moreJobs]);
+        setStartIndex(startIndex + 5);
+      } else {
+        alert("No more jobs found or scraping is still in progress. Please try again later.");
+      }
+    } catch (error) {
+      console.error('Error fetching more jobs:', error);
+    } finally {
+      setLoadMoreJobsLoading(false);
+    }
+  };
+
+  return (
+    <Container>
+      <h1 className="text-center mt-4">Appl.ai - Your Job Application Automater</h1>
+
+      {/* API Key Modal */}
+      <Modal isOpen={modal} toggle={() => setModal(!modal)} backdrop="static" className="modal-dialog-centered">
+        <ModalHeader toggle={() => setModal(!modal)}>Enter OpenAI API Key</ModalHeader>
+        <ModalBody>
+          <form onSubmit={handleApiKeySubmit}>
+            <FormGroup>
+              <Label for="apiKeyInput">API Key:</Label>
+              <Input
+                type="text"
+                id="apiKeyInput"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                style={{ color: 'black' }}
+              />
+            </FormGroup>
+            <Button type="submit" color="primary">Submit</Button>{' '}
+            <Button color="secondary" onClick={() => setModal(!modal)}>Cancel</Button>
+          </form>
+          {error && <div className="error-message">{error}</div>}
+        </ModalBody>
+      </Modal>
+
+      {/* Resume Upload Component (Shown after API key is entered) */}
+      {showUpload && (
+        <Row className="mt-4">
+          <Col md="6" className="mx-auto">
+            <Card>
+              <CardBody className="text-center">
+                <CardTitle tag="h5">Upload Your Resume (PDF Format)</CardTitle>
+                <Input type="file" accept=".pdf" onChange={handleFileChange} />
+                <Button color="primary" onClick={submit} disabled={!file} className="mt-3">
+                  {isLoadingAnalyze ? <div className="button-overlay">Scraping Jobs from the Web for you...</div> : "Analyze and Find Jobs"} 
+                </Button>
               </CardBody>
             </Card>
           </Col>
         </Row>
+      )}
+
+      {/* Table Section */}
+      {jobData.length > 0 && (
         <Row>
-          <Col lg="4">
-            <Card className="card-chart">
-              <CardHeader>
-                <h5 className="card-category">Total Shipments</h5>
-                <CardTitle tag="h3">
-                  <i className="tim-icons icon-bell-55 text-info" /> 763,215
-                </CardTitle>
-              </CardHeader>
-              <CardBody>
-                <div className="chart-area">
-                  <Line
-                    data={chartExample2.data}
-                    options={chartExample2.options}
-                  />
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col lg="4">
-            <Card className="card-chart">
-              <CardHeader>
-                <h5 className="card-category">Daily Sales</h5>
-                <CardTitle tag="h3">
-                  <i className="tim-icons icon-delivery-fast text-primary" />{" "}
-                  3,500€
-                </CardTitle>
-              </CardHeader>
-              <CardBody>
-                <div className="chart-area">
-                  <Bar
-                    data={chartExample3.data}
-                    options={chartExample3.options}
-                  />
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col lg="4">
-            <Card className="card-chart">
-              <CardHeader>
-                <h5 className="card-category">Completed Tasks</h5>
-                <CardTitle tag="h3">
-                  <i className="tim-icons icon-send text-success" /> 12,100K
-                </CardTitle>
-              </CardHeader>
-              <CardBody>
-                <div className="chart-area">
-                  <Line
-                    data={chartExample4.data}
-                    options={chartExample4.options}
-                  />
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-        <Row>
-          <Col lg="6" md="12">
-            <Card className="card-tasks">
-              <CardHeader>
-                <h6 className="title d-inline">Tasks(5)</h6>
-                <p className="card-category d-inline"> today</p>
-                <UncontrolledDropdown>
-                  <DropdownToggle
-                    caret
-                    className="btn-icon"
-                    color="link"
-                    data-toggle="dropdown"
-                    type="button"
-                  >
-                    <i className="tim-icons icon-settings-gear-63" />
-                  </DropdownToggle>
-                  <DropdownMenu aria-labelledby="dropdownMenuLink" right>
-                    <DropdownItem
-                      href="#pablo"
-                      onClick={(e) => e.preventDefault()}
-                    >
-                      Action
-                    </DropdownItem>
-                    <DropdownItem
-                      href="#pablo"
-                      onClick={(e) => e.preventDefault()}
-                    >
-                      Another action
-                    </DropdownItem>
-                    <DropdownItem
-                      href="#pablo"
-                      onClick={(e) => e.preventDefault()}
-                    >
-                      Something else
-                    </DropdownItem>
-                  </DropdownMenu>
-                </UncontrolledDropdown>
-              </CardHeader>
-              <CardBody>
-                <div className="table-full-width table-responsive">
-                  <Table>
-                    <tbody>
-                      <tr>
-                        <td>
-                          <FormGroup check>
-                            <Label check>
-                              <Input defaultValue="" type="checkbox" />
-                              <span className="form-check-sign">
-                                <span className="check" />
-                              </span>
-                            </Label>
-                          </FormGroup>
-                        </td>
-                        <td>
-                          <p className="title">Update the Documentation</p>
-                          <p className="text-muted">
-                            Dwuamish Head, Seattle, WA 8:47 AM
-                          </p>
-                        </td>
-                        <td className="td-actions text-right">
-                          <Button
-                            color="link"
-                            id="tooltip636901683"
-                            title=""
-                            type="button"
-                          >
-                            <i className="tim-icons icon-pencil" />
-                          </Button>
-                          <UncontrolledTooltip
-                            delay={0}
-                            target="tooltip636901683"
-                            placement="right"
-                          >
-                            Edit Task
-                          </UncontrolledTooltip>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <FormGroup check>
-                            <Label check>
-                              <Input
-                                defaultChecked
-                                defaultValue=""
-                                type="checkbox"
-                              />
-                              <span className="form-check-sign">
-                                <span className="check" />
-                              </span>
-                            </Label>
-                          </FormGroup>
-                        </td>
-                        <td>
-                          <p className="title">GDPR Compliance</p>
-                          <p className="text-muted">
-                            The GDPR is a regulation that requires businesses to
-                            protect the personal data and privacy of Europe
-                            citizens for transactions that occur within EU
-                            member states.
-                          </p>
-                        </td>
-                        <td className="td-actions text-right">
-                          <Button
-                            color="link"
-                            id="tooltip457194718"
-                            title=""
-                            type="button"
-                          >
-                            <i className="tim-icons icon-pencil" />
-                          </Button>
-                          <UncontrolledTooltip
-                            delay={0}
-                            target="tooltip457194718"
-                            placement="right"
-                          >
-                            Edit Task
-                          </UncontrolledTooltip>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <FormGroup check>
-                            <Label check>
-                              <Input defaultValue="" type="checkbox" />
-                              <span className="form-check-sign">
-                                <span className="check" />
-                              </span>
-                            </Label>
-                          </FormGroup>
-                        </td>
-                        <td>
-                          <p className="title">Solve the issues</p>
-                          <p className="text-muted">
-                            Fifty percent of all respondents said they would be
-                            more likely to shop at a company
-                          </p>
-                        </td>
-                        <td className="td-actions text-right">
-                          <Button
-                            color="link"
-                            id="tooltip362404923"
-                            title=""
-                            type="button"
-                          >
-                            <i className="tim-icons icon-pencil" />
-                          </Button>
-                          <UncontrolledTooltip
-                            delay={0}
-                            target="tooltip362404923"
-                            placement="right"
-                          >
-                            Edit Task
-                          </UncontrolledTooltip>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <FormGroup check>
-                            <Label check>
-                              <Input defaultValue="" type="checkbox" />
-                              <span className="form-check-sign">
-                                <span className="check" />
-                              </span>
-                            </Label>
-                          </FormGroup>
-                        </td>
-                        <td>
-                          <p className="title">Release v2.0.0</p>
-                          <p className="text-muted">
-                            Ra Ave SW, Seattle, WA 98116, SUA 11:19 AM
-                          </p>
-                        </td>
-                        <td className="td-actions text-right">
-                          <Button
-                            color="link"
-                            id="tooltip818217463"
-                            title=""
-                            type="button"
-                          >
-                            <i className="tim-icons icon-pencil" />
-                          </Button>
-                          <UncontrolledTooltip
-                            delay={0}
-                            target="tooltip818217463"
-                            placement="right"
-                          >
-                            Edit Task
-                          </UncontrolledTooltip>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <FormGroup check>
-                            <Label check>
-                              <Input defaultValue="" type="checkbox" />
-                              <span className="form-check-sign">
-                                <span className="check" />
-                              </span>
-                            </Label>
-                          </FormGroup>
-                        </td>
-                        <td>
-                          <p className="title">Export the processed files</p>
-                          <p className="text-muted">
-                            The report also shows that consumers will not easily
-                            forgive a company once a breach exposing their
-                            personal data occurs.
-                          </p>
-                        </td>
-                        <td className="td-actions text-right">
-                          <Button
-                            color="link"
-                            id="tooltip831835125"
-                            title=""
-                            type="button"
-                          >
-                            <i className="tim-icons icon-pencil" />
-                          </Button>
-                          <UncontrolledTooltip
-                            delay={0}
-                            target="tooltip831835125"
-                            placement="right"
-                          >
-                            Edit Task
-                          </UncontrolledTooltip>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td>
-                          <FormGroup check>
-                            <Label check>
-                              <Input defaultValue="" type="checkbox" />
-                              <span className="form-check-sign">
-                                <span className="check" />
-                              </span>
-                            </Label>
-                          </FormGroup>
-                        </td>
-                        <td>
-                          <p className="title">Arival at export process</p>
-                          <p className="text-muted">
-                            Capitol Hill, Seattle, WA 12:34 AM
-                          </p>
-                        </td>
-                        <td className="td-actions text-right">
-                          <Button
-                            color="link"
-                            id="tooltip217595172"
-                            title=""
-                            type="button"
-                          >
-                            <i className="tim-icons icon-pencil" />
-                          </Button>
-                          <UncontrolledTooltip
-                            delay={0}
-                            target="tooltip217595172"
-                            placement="right"
-                          >
-                            Edit Task
-                          </UncontrolledTooltip>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </Table>
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col lg="6" md="12">
+          <Col md="12">
             <Card>
               <CardHeader>
-                <CardTitle tag="h4">Simple Table</CardTitle>
+                <CardTitle tag="h4">Job Details</CardTitle>
               </CardHeader>
               <CardBody>
-                <Table className="tablesorter" responsive>
+                <Table className="tablesorter">
                   <thead className="text-primary">
                     <tr>
-                      <th>Name</th>
-                      <th>Country</th>
-                      <th>City</th>
-                      <th className="text-center">Salary</th>
+                      <th>No.</th>
+                      <th>Company</th>
+                      <th>Position</th>
+                      <th>Pay</th>
+                      <th>Location</th>
+                      <th>Posting Link</th>
+                      <th>Actions</th> 
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td>Dakota Rice</td>
-                      <td>Niger</td>
-                      <td>Oud-Turnhout</td>
-                      <td className="text-center">$36,738</td>
-                    </tr>
-                    <tr>
-                      <td>Minerva Hooper</td>
-                      <td>Curaçao</td>
-                      <td>Sinaai-Waas</td>
-                      <td className="text-center">$23,789</td>
-                    </tr>
-                    <tr>
-                      <td>Sage Rodriguez</td>
-                      <td>Netherlands</td>
-                      <td>Baileux</td>
-                      <td className="text-center">$56,142</td>
-                    </tr>
-                    <tr>
-                      <td>Philip Chaney</td>
-                      <td>Korea, South</td>
-                      <td>Overland Park</td>
-                      <td className="text-center">$38,735</td>
-                    </tr>
-                    <tr>
-                      <td>Doris Greene</td>
-                      <td>Malawi</td>
-                      <td>Feldkirchen in Kärnten</td>
-                      <td className="text-center">$63,542</td>
-                    </tr>
-                    <tr>
-                      <td>Mason Porter</td>
-                      <td>Chile</td>
-                      <td>Gloucester</td>
-                      <td className="text-center">$78,615</td>
-                    </tr>
-                    <tr>
-                      <td>Jon Porter</td>
-                      <td>Portugal</td>
-                      <td>Gloucester</td>
-                      <td className="text-center">$98,615</td>
-                    </tr>
-                  </tbody>
-                </Table>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-      </div>
-    </>
-  );
+                    {jobData.map((item, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{item.company_name}</td>
+                        <td>{item.position}</td>
+                        <td>{item.pay}</td>
+                        <td>{item.location}</td>
+                        <td>
+                          <a href={item.job_link} target="_blank" rel="noopener noreferrer">Link</a>
+                        </td>
+                        <td> 
+  <Button color="primary" size="sm" onClick={() => handleGenerateResume(item)} style={{ marginRight: '5px' }} disabled={isLoadingResume}> 
+    {isLoadingResume && <div className="button-overlay">Loading...</div>}
+    {!isLoadingResume && "Generate Resume"}
+  </Button>
+  <Button color="primary" size="sm" onClick={() => handleGenerateCoverLetter(item)} style={{ marginRight: '5px' }} disabled={isLoadingCoverLetter}> 
+    {isLoadingCoverLetter && <div className="button-overlay">Loading...</div>}
+    {!isLoadingCoverLetter && "Generate Cover Letter"}
+  </Button>
+  <Button color="primary" size="sm" onClick={() => handleGenerateEmail(item)} disabled={isLoadingApply}> 
+    {isLoadingApply && <div className="button-overlay">Loading...</div>}
+    {!isLoadingApply && "Apply to Job"}
+  </Button>
+</td>
+</tr>
+))}
+</tbody>
+</Table>
+</CardBody>
+</Card>
+</Col>
+</Row>
+)}
+{/* Email Preview Modal */}
+<EmailPreviewModal 
+        recipientEmail={emailPreviewModalData.recipientEmail}
+        emailBody={emailPreviewModalData.emailBody}
+        isOpen={emailPreviewModalData.isOpen}
+        toggle={() => setEmailPreviewModalData({ ...emailPreviewModalData, isOpen: false })}
+      />
+</Container>
+);
 }
 
 export default Dashboard;

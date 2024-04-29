@@ -118,34 +118,7 @@ function Sidebar(props) {
                 {logoText}
               </div>
             ) : null}
-            <Nav>
-              {routes.map((prop, key) => {
-                if (prop.redirect) return null;
-                return (
-                  <li
-                    className={
-                      activeRoute(prop.path) + (prop.pro ? " active-pro" : "")
-                    }
-                    key={key}
-                  >
-                    <NavLink
-                      to={prop.layout + prop.path}
-                      className="nav-link"
-                      onClick={props.toggleSidebar}
-                    >
-                      <i className={prop.icon} />
-                      <p>{rtlActive ? prop.rtlName : prop.name}</p>
-                    </NavLink>
-                  </li>
-                );
-              })}
-              <li className="active-pro">
-                <ReactstrapNavLink href="https://www.creative-tim.com/product/black-dashboard-pro-react?ref=bdr-user-archive-sidebar-upgrade-pro">
-                  <i className="tim-icons icon-spaceship" />
-                  <p>Upgrade to PRO</p>
-                </ReactstrapNavLink>
-              </li>
-            </Nav>
+            
           </div>
         </div>
       )}
@@ -153,23 +126,6 @@ function Sidebar(props) {
   );
 }
 
-Sidebar.propTypes = {
-  // if true, then instead of the routes[i].name, routes[i].rtlName will be rendered
-  // insde the links of this component
-  rtlActive: PropTypes.bool,
-  routes: PropTypes.arrayOf(PropTypes.object),
-  logo: PropTypes.shape({
-    // innerLink is for links that will direct the user within the app
-    // it will be rendered as <Link to="...">...</Link> tag
-    innerLink: PropTypes.string,
-    // outterLink is for links that will direct the user outside the app
-    // it will be rendered as simple <a href="...">...</a> tag
-    outterLink: PropTypes.string,
-    // the text of the logo
-    text: PropTypes.node,
-    // the image src of the logo
-    imgSrc: PropTypes.string,
-  }),
-};
+
 
 export default Sidebar;
