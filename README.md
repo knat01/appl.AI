@@ -76,6 +76,3 @@ We welcome contributions from the developer community to help us achieve these g
 
 Appl.ai is intended to be used as a tool to assist with the job application process. While we strive to provide accurate and relevant information, we cannot guarantee the success of any job application. Users are encouraged to carefully review and edit the generated documents to ensure they meet their specific needs and accurately reflect their qualifications.
 
-## Contributing
-
-We encourage contributions from the developer community to enhance and expand the capabilities of Appl.ai. Please refer to the CONTRIBUTING.md file for guidelines on how to contribute to the project.
