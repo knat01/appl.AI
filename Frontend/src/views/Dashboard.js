@@ -234,9 +234,9 @@ function Dashboard() {
   return (
     <Container>
       <h1 className="text-center mt-4">Appl.ai - Your Job Application Automater</h1>
-
+      
       {/* API Key Modal */}
-      <Modal isOpen={modal} toggle={() => setModal(!modal)} backdrop="static" className="modal-dialog-centered">
+      <Modal isOpen={modal} toggle={() => setModal(!modal)} backdrop="static" style={{ top: '-30%' }} className="modal-dialog-centered">
         <ModalHeader toggle={() => setModal(!modal)}>Enter OpenAI API Key</ModalHeader>
         <ModalBody>
           <form onSubmit={handleApiKeySubmit}>
