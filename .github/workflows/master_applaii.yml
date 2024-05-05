@@ -1,4 +1,4 @@
-name: Build and deploy Python and React apps to Azure Web App - Applaii
+name: Build and deploy full-stack application to Azure Web App - Applaii
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # Set up and build Flask backend
+      # Set up and build Flask backend and React frontend
       - name: Set up Python version
         uses: actions/setup-python@v2
         with:
@@ -30,82 +30,47 @@ jobs:
           source venv/bin/activate
           pip install -r requirements.txt
 
-      - name: Zip Flask artifact for deployment
-        working-directory: Backend
-        run: zip -r ../flask-release.zip . -x "venv/*"
-      
-      # Set up and build React frontend
       - name: Set up Node.js version
         uses: actions/setup-node@v2
         with:
           node-version: '14'
 
-      - name: Install React dependencies
+      - name: Install React dependencies and build React app
         working-directory: Frontend
-        run: npm install
+        run: |
+          npm install
+          npm run build
+          cp -r build/* ../Backend/
 
-      - name: Build React app
-        working-directory: Frontend
-        run: CI='' npm run build
+      - name: Zip artifact for deployment
+        working-directory: Backend
+        run: zip -r ../release.zip . -x "venv/*"
 
-      - name: Zip React artifact for deployment
-        working-directory: Frontend
-        run: zip -r ../react-release.zip build
-
-      - name: Upload artifacts for deployment jobs
+      - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
-          name: flask-app
-          path: flask-release.zip
+          name: flask-react-app
+          path: release.zip
 
-      - name: Upload artifacts for deployment jobs
-        uses: actions/upload-artifact@v2
-        with:
-          name: react-app
-          path: react-release.zip
-
-  deploy-flask:
+  deploy:
     runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Download artifact for deployment job
         uses: actions/download-artifact@v2
         with:
-          name: flask-app
+          name: flask-react-app
 
       - name: Unzip artifact for deployment
-        run: unzip flask-release.zip
+        run: unzip release.zip
 
       - name: Login to Azure
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: 'Deploy to Azure Web App for Flask'
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'Applaii-backend'
-          slot-name: 'Production'
-          
-  deploy-react:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Download artifact for deployment job
-        uses: actions/download-artifact@v2
-        with:
-          name: react-app
-
-      - name: Unzip artifact for deployment
-        run: unzip react-release.zip
-
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: 'Deploy to Azure Web App for React'
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'Applaii-frontend'
+          app-name: 'Applaii'
           slot-name: 'Production'
