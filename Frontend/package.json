@@ -2,7 +2,7 @@
   "name": "black-dashboard-react",
   "version": "1.2.2",
   "private": true,
-  "homepage": "https://appl-ai.vercel.app/",
+  "homepage": ".",
   "dependencies": {
     "@fortawesome/fontawesome-free": "6.4.0",
     "aws-sdk": "^2.1525.0",
@@ -25,7 +25,7 @@
   "scripts": {
     "predeploy": "npm run build",
     "start": "react-scripts start",
-    "build": "CI='' react-scripts build",
+    "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "install:clean": "rm -rf node_modules/ && rm -rf package-lock.json && npm install && npm start",
