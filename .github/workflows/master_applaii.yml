@@ -2,7 +2,7 @@
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 # More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
-name: Build and deploy Python app to Azure Web App - Applaii
+name: Build and deploy Python and React apps to Azure Web App - Applaii
 
 on:
   push:
@@ -15,53 +15,67 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v2
 
+      # Set up and build Flask backend
       - name: Set up Python version
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: '3.9'
-
-      - name: Create and start virtual environment
+      
+      - name: Install Flask dependencies
+        working-directory: Backend
         run: |
           python -m venv venv
           source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Zip Flask artifact for deployment
+        working-directory: Backend
+        run: zip -r ../flask-release.zip . -x "venv/*"
       
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-        
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
-
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
-
-      - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v3
+      # Set up and build React frontend
+      - name: Set up Node.js version
+        uses: actions/setup-node@v2
         with:
-          name: python-app
-          path: |
-            release.zip
-            !venv/
+          node-version: '14'
 
-  deploy:
+      - name: Install React dependencies
+        working-directory: Frontend
+        run: npm install
+
+      - name: Build React app
+        working-directory: Frontend
+        run: npm run build
+
+      - name: Zip React artifact for deployment
+        working-directory: Frontend
+        run: zip -r ../react-release.zip build
+
+      - name: Upload artifacts for deployment jobs
+        uses: actions/upload-artifact@v2
+        with:
+          name: flask-app
+          path: flask-release.zip
+
+      - name: Upload artifacts for deployment jobs
+        uses: actions/upload-artifact@v2
+        with:
+          name: react-app
+          path: react-release.zip
+
+  deploy-flask:
     runs-on: ubuntu-latest
     needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    permissions:
-      id-token: write #This is required for requesting the JWT
-
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v3
+      - name: Download artifact for deployment job
+        uses: actions/download-artifact@v2
         with:
-          name: python-app
+          name: flask-app
 
       - name: Unzip artifact for deployment
-        run: unzip release.zip
+        run: unzip flask-release.zip
 
-      
       - name: Login to Azure
         uses: azure/login@v1
         with:
@@ -69,10 +83,33 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3253B40677034DAB8B70329C50562AAF }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0AE9E270A74C41D79108B71C5BE658AA }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: 'Deploy to Azure Web App for Flask'
         uses: azure/webapps-deploy@v2
-        id: deploy-to-webapp
         with:
-          app-name: 'Applaii'
+          app-name: 'Applaii-backend'
           slot-name: 'Production'
           
+  deploy-react:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download artifact for deployment job
+        uses: actions/download-artifact@v2
+        with:
+          name: react-app
+
+      - name: Unzip artifact for deployment
+        run: unzip react-release.zip
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_F206BDE349FD41AAB346AFFA8F7442E6 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3253B40677034DAB8B70329C50562AAF }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0AE9E270A74C41D79108B71C5BE658AA }}
+
+      - name: 'Deploy to Azure Web App for React'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'Applaii-frontend'
+          slot-name: 'Production'
