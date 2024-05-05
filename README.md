@@ -2,7 +2,17 @@
 
 Appl.ai is an innovative web application designed to empower job seekers by automating and optimizing the application process. It harnesses the power of artificial intelligence and web scraping technologies to help candidates save time, stand out from the competition, and ultimately land their dream jobs. 
 
+[Try it out here](https://appl-ai.vercel.app)
+
+
+https://github.com/knat01/appl.AI/assets/59844600/09f15df2-6f24-422b-b47d-defc5ebb8832
+
+
+
 ## Badges
+
+
+
 
 ![React](https://img.shields.io/badge/React-16.8+-blue)
 ![Python](https://img.shields.io/badge/Python-3.7%2B-blue)
