@@ -80,8 +80,9 @@ jobs:
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_F206BDE349FD41AAB346AFFA8F7442E6 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3253B40677034DAB8B70329C50562AAF }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0AE9E270A74C41D79108B71C5BE658AA }}
-          auth-type: 'identity'
+          auth-type: 'sp'
 
       - name: 'Deploy to Azure Web App for Flask'
         uses: azure/webapps-deploy@v2
@@ -109,8 +110,9 @@ jobs:
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_F206BDE349FD41AAB346AFFA8F7442E6 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3253B40677034DAB8B70329C50562AAF }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0AE9E270A74C41D79108B71C5BE658AA }}
-          auth-type: 'identity'
+          auth-type: 'sp'
 
       - name: 'Deploy to Azure Web App for React'
         uses: azure/webapps-deploy@v2
