@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, send_from_directory, jsonify, request, send_file
 from flask_cors import CORS
 import PyPDF2
 import openai
@@ -16,8 +16,17 @@ import base64
 import urllib.parse
 
 # Initialize Flask app
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../Frontend/build', static_url_path='/')
 CORS(app)
+
+# Define static route for React frontend
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, "index.html")
 
 # Global variable to store the API key
 api_key = None
