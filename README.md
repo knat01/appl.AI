@@ -85,43 +85,51 @@ Before getting started, ensure you have the following prerequisites installed:
 1. **Backend Setup**:
 
    a. **Navigate to the Backend Directory**:
+   ```bash
    cd appl.AI/Backend/main
+   ```
 
    b. **Create and Activate a Virtual Environment**:
+   ```bash
    python -m venv env
    source env/bin/activate  # For macOS/Linux
    env\Scripts\activate  # For Windows
-
+   ```
+   
    c. **Install Backend Dependencies**:
+   ```bash
    pip install -r requirements.txt
-
-   d. **Set Environment Variables**:
-
-   Create a `.env` file in the `Backend/main` directory and add the following:
-
-   OPENAI_API_KEY=<Your_OpenAI_API_Key>
-
-   e. **Run the Backend Server**:
+   ```
+   
+   d. **Run the Backend Server**:
+   ```bash
    flask run
+   ```
 
-2. **Frontend Setup**:
-
+3. **Frontend Setup**:
+   
    a. **Navigate to the Frontend Directory**:
+   ```bash
    cd ../../Frontend
+   ```
 
    b. **Install Frontend Dependencies**:
+   ```bash
    npm install
+   ```
 
    c. **Set Environment Variables**:
-
+   
    Create a `.env` file in the `Frontend` directory and add the following:
-
+   ```bash
    REACT_APP_BACKEND_URL=http://127.0.0.1:5000
-
+   ```
    d. **Run the Frontend Development Server**:
+   ```bash
    npm start
+   ```
 
-3. **Access the Application**:
+5. **Access the Application**:
 
    Once both the backend and frontend servers are running, you can access Appl.ai locally by visiting [http://localhost:3000](http://localhost:3000) in your web browser.
 
