@@ -1,5 +1,4 @@
-
-  {
+{
     "version": 2,
     "builds": [
       {
@@ -8,8 +7,7 @@
       },
       {
         "src": "Frontend/package.json",
-        "use": "@vercel/static-build",
-        "config": { "distDir": "build" }
+        "use": "@vercel/next"
       }
     ],
     "routes": [
@@ -19,7 +17,7 @@
       },
       {
         "src": "/(.*)",
-        "dest": "Frontend/build/$1"
+        "dest": "Frontend/$1"
       }
     ]
   }
