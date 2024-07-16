@@ -65,6 +65,85 @@ Appl.ai is built on a robust and scalable architecture:
 *   **Document Formatting:** LaTeX ensures the generated resumes and cover letters are professionally formatted and ATS-scannable. 
 *   **LaTeX Editor Integration:**  Overleaf integration provides a seamless platform for further editing and customization of application documents.
 
+
+## How to Use Appl.ai Locally
+
+If you'd like to run Appl.ai on your local machine, follow these steps:
+
+### Prerequisites
+
+Before getting started, ensure you have the following prerequisites installed:
+
+1. **Python**: Version 3.7 or higher.
+2. **Node.js**: Version 14 or higher.
+3. **npm**: Installed with Node.js.
+4. **Google Chrome**: For Selenium to use as the browser.
+5. **ChromeDriver**: To interact with Google Chrome using Selenium.
+
+### Setup
+
+1. **Backend Setup**:
+
+   a. **Navigate to the Backend Directory**:
+   ```bash
+   cd appl.AI/Backend/main
+   ```
+
+   b. **Create and Activate a Virtual Environment**:
+   ```bash
+   python -m venv env
+   source env/bin/activate  # For macOS/Linux
+   env\Scripts\activate  # For Windows
+   ```
+   
+   c. **Install Backend Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+   
+   d. **Run the Backend Server**:
+   ```bash
+   flask run
+   ```
+
+3. **Frontend Setup**:
+   
+   a. **Navigate to the Frontend Directory**:
+   ```bash
+   cd ../../Frontend
+   ```
+
+   b. **Install Frontend Dependencies**:
+   ```bash
+   npm install
+   ```
+
+   c. **Set Environment Variables**:
+   
+   Create a `.env` file in the `Frontend` directory and add the following:
+   ```bash
+   REACT_APP_BACKEND_URL=http://127.0.0.1:5000
+   ```
+   d. **Run the Frontend Development Server**:
+   ```bash
+   npm start
+   ```
+
+5. **Access the Application**:
+
+   Once both the backend and frontend servers are running, you can access Appl.ai locally by visiting [http://localhost:3000](http://localhost:3000) in your web browser.
+
+### Optional: Customize ChromeDriver Path
+
+If your ChromeDriver is not installed in a standard location, you can set its path in the `Backend/main/app.py` file where Selenium is initialized. For example:
+
+from selenium import webdriver
+
+options = webdriver.ChromeOptions()
+options.headless = True
+driver = webdriver.Chrome(executable_path='/path/to/chromedriver', options=options)
+
+
 ## Conclusion
 
 Appl.ai offers a comprehensive solution for job seekers looking to streamline their application process and improve their chances of success. By leveraging the power of AI and automation, Appl.ai empowers candidates to focus on showcasing their qualifications and connecting with potential employers, rather than getting bogged down by tedious tasks.  
